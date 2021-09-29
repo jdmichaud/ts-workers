@@ -1,0 +1,46 @@
+{
+  "name": "@jdmichaud/ts-workers",
+  "version": "0.0.3",
+  "description": "A typescript library to facilitate the usage of typesafe Web Workers.",
+  "main": "index.js",
+  "scripts": {
+    "all": "npm run lint && npm run build",
+    "build": "rollup -c rollup.config.js",
+    "lint": "eslint --config .eslintrc.js 'src/**/*.ts' --ignore-pattern 'src/**/*.spec.ts'",
+    "ppublish": "npm run all && npm publish",
+    "dev": "rollup -w -c dev/rollup.config.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jdmichaud/ts-workers.git"
+  },
+  "keywords": [
+    "Web",
+    "Workers",
+    "Typescript"
+  ],
+  "author": "jdmichaud",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jdmichaud/ts-workers/issues"
+  },
+  "files": [
+    "dist"
+  ],
+  "homepage": "https://github.com/jdmichaud/ts-workers#readme",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^20.0.0",
+    "@rollup/plugin-node-resolve": "^13.0.5",
+    "@types/node": "16.10.2",
+    "@typescript-eslint/eslint-plugin": "^4.32.0",
+    "@typescript-eslint/parser": "^4.32.0",
+    "eslint": "^7.32.0",
+    "rollup": "^2.57.0",
+    "rollup-plugin-copy": "^3.4.0",
+    "rollup-plugin-serve": "^1.1.0",
+    "rollup-plugin-sourcemaps": "^0.6.3",
+    "rollup-plugin-terser": "^7.0.2",
+    "rollup-plugin-typescript2": "^0.30.0",
+    "typescript": "^4.4.3"
+  }
+}
