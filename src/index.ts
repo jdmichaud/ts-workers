@@ -18,5 +18,6 @@
  * SOFTWARE.
  */
 
-export { Task } from './task';
+export { Queue } from './queue';
 export { Thread } from './thread';
+export { ThreadBuilder } from './thread-builder';

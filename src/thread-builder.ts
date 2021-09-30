@@ -19,30 +19,43 @@
  * SOFTWARE.
  */
 
+import { Queue } from './queue';
 import { Thread } from './thread';
 
-export class Task<OutputType, T extends any[]> {
-  static create<OutputType, T extends any[]>(task: (...args: T) => OutputType): Task<OutputType, T> {
-    return new Task<OutputType, T>(Task.makeTask(task));
+export class ThreadBuilder<OutputType, T extends any[]> {
+  private threads?: Thread<OutputType, T>[];
+
+  static create<OutputType, T extends any[]>(code: (...args: T) => OutputType)
+    : ThreadBuilder<OutputType, T> {
+    return new ThreadBuilder<OutputType, T>(ThreadBuilder.makeServer(code));
   }
 
-  private static makeTask<OutputType, T extends any[]>(task: (...args: T) => OutputType): string {
+  private static makeServer<OutputType, T extends any[]>(code: (...args: T) => OutputType): string {
     return `
-      onmessage = (msg) => {
-        postMessage((${task.toString()})(...msg.data));
+      onmessage = async (msg) => {
+        const result = await (${code.toString()})(...msg.data);
+        postMessage(result);
       };
     `;
   }
 
-  private constructor(private readonly task: string) {}
+  private constructor(private readonly server: string) {}
 
   createThread(): Thread<OutputType, T> {
-    const blob = new Blob([this.task], { type: 'application/javascript' });
+    const blob = new Blob([this.server], { type: 'application/javascript' });
     const worker = new Worker(URL.createObjectURL(blob));
     return Thread.create(worker);
   }
 
-  createThreads(nThread: number): Thread<OutputType, T>[] {
-    return Array.from(Array(nThread)).map(_ => this.createThread());
+  createThreads(nThread: number): ThreadBuilder<OutputType, T> {
+    this.threads = Array.from(Array(nThread)).map(_ => this.createThread());
+    return this;
+  }
+
+  queue(): Queue<OutputType, T> {
+    if (this.threads) {
+      return Queue.create(this.threads);
+    }
+    throw new Error('No threads created on builder. First create threads before creating a queue');
   }
 }
