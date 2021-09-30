@@ -23,30 +23,28 @@ Types are checked:
   const res: number = await Task.create((b: number) => b * 2).createThread().run('21');
 ```
 
-You can create multiple workers for parallel work:
+Queue can be used to spread tasks to a pool of workers:
 ```typescript
-import { Task } from '../src';
+import { Queue, ThreadBuilder, Thread } from '../src';
 
 async function main(): Promise<void> {
-  const sharedArray = new SharedArrayBuffer(16);
-  const parallelWorkers = Task.create((buffer, index, length) => {
-    const bytearray = new Uint8Array(buffer);
-    for (let i = index; i < index + length; ++i) {
-      bytearray[i] = i;
-    }
-  }).createThreads(4);
+  const queue = ThreadBuilder
+    .create(delay => new Promise<void>(resolve => setTimeout(() => resolve(), delay)))
+    .createThreads(navigator.hardwareConcurrency)
+    .queue();
+  const delays = Array.from(Array(navigator.hardwareConcurrency * 2))
+    .map(_ => [Math.random() * 1000 | 0]);
+  const promises = queue.run(delays as any);
 
-  await Promise.all([
-    parallelWorkers[0].run(sharedArray, 0, 4),
-    parallelWorkers[1].run(sharedArray, 4, 4),
-    parallelWorkers[2].run(sharedArray, 8, 4),
-    parallelWorkers[3].run(sharedArray, 12, 4),
-  ]);
-
-  const byteArray = new Uint8Array(sharedArray);
-  for (let i = 0; i < byteArray.length; ++i) {
-    console.log(byteArray[i]);
-  }
+  promises.forEach((promise, index) => {
+    const span = document.createElement('span');
+    span.innerText = Number(delays[index]).toString();
+    span.style.backgroundColor = '#F00';
+    const div = document.createElement('div');
+    div.appendChild(span);
+    document.body.appendChild(div);
+    promise.then(() => span.style.backgroundColor = '#0F0')
+  })
 }
 
 window.onload = main;
@@ -58,6 +56,10 @@ Simply install it from the npm registry:
 ```bash
 npm install @jdmichaud/ts-workers
 ```
+
+# Limitations
+
+* Works only on browsers implementing ES2020.
 
 # Contributions
 

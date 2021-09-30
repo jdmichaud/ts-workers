@@ -6,7 +6,7 @@ import { Queue, ThreadBuilder, Thread } from '../src';
 
 async function main(): Promise<void> {
   const queue = ThreadBuilder
-    .create(delay => new Promise(resolve => setTimeout(() => resolve("hello"), delay)))
+    .create(delay => new Promise<void>(resolve => setTimeout(() => resolve(), delay)))
     .createThreads(navigator.hardwareConcurrency)
     .queue();
   const delays = Array.from(Array(navigator.hardwareConcurrency * 2))

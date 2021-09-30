@@ -1,6 +1,6 @@
 {
   "name": "@jdmichaud/ts-workers",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "description": "A typescript library to facilitate the usage of typesafe Web Workers.",
   "main": "index.js",
   "scripts": {
