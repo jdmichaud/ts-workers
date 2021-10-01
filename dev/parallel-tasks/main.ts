@@ -1,4 +1,4 @@
-import { Queue, ThreadBuilder, Thread } from '../src';
+import { Queue, ThreadBuilder, Thread } from '../../src';
 
 (window as any).Queue = Queue;
 (window as any).ThreadBuilder = ThreadBuilder;

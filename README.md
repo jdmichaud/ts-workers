@@ -1,9 +1,7 @@
 # ts-workers
 
 A thin typescript layer on top of the [Worker API](https://developer.mozilla.org/en-US/docs/Web/API/Worker)
-to facilite its usage in a typesafe way.
-
-[For example](dev/main.ts):
+to facilite its usage in a typesafe way. For example:
 ```typescript
 import { Task } from '../src';
 

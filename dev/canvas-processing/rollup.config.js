@@ -7,10 +7,10 @@ import serve from 'rollup-plugin-serve';
 import copy from 'rollup-plugin-copy'
 
 export default {
-  input: 'dev/main.ts',
+  input: 'dev/canvas-processing/main.ts',
   output: {
     name: 'Dev',
-    file: 'dev/dist/main.js',
+    file: 'dev/canvas-processing/dist/main.js',
     format: 'umd',
     sourcemap: true,
   },
@@ -21,11 +21,11 @@ export default {
     typescript(),
     copy({
       targets: [
-        { src: 'dev/index.html', dest: 'dev/dist/' },
+        { src: 'dev/canvas-processing/index.html', dest: 'dev/canvas-processing/dist/' },
       ]
     }),
     serve({
-      contentBase: 'dev/dist',
+      contentBase: 'dev/canvas-processing/dist',
       headers: {
         'Access-Control-Allow-Origin': '*',
         // For SharedArrayBuffer
