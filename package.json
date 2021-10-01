@@ -2,7 +2,7 @@
   "name": "@jdmichaud/ts-workers",
   "version": "0.1.0",
   "description": "A typescript library to facilitate the usage of typesafe Web Workers.",
-  "main": "index.js",
+  "main": "dist/ts-workers.min.js",
   "scripts": {
     "all": "npm run lint && npm run build",
     "build": "rollup -c rollup.config.js",
@@ -10,6 +10,7 @@
     "ppublish": "npm run all && npm publish",
     "dev": "rollup -w -c dev/rollup.config.js"
   },
+  "typings": "dist/index.d.ts",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/jdmichaud/ts-workers.git"
