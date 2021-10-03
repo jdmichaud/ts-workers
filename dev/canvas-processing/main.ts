@@ -1,23 +1,21 @@
-import { Queue, ThreadBuilder, Thread } from '../../src';
-
-(window as any).Queue = Queue;
-(window as any).ThreadBuilder = ThreadBuilder;
-(window as any).Thread = Thread;
+import { ThreadBuilder } from '../../src';
 
 async function main(): Promise<void> {
   let running = true;
+  // The button to stop the while loop
   const stopbtn = document.getElementById('stopbtn');
   stopbtn!.addEventListener('click', () => running = false);
-
+  // Create the canvas and retrieve the context
   const canvas: HTMLCanvasElement = document.getElementById('viewport') as HTMLCanvasElement;
   const ctx = canvas.getContext('2d');
   if (ctx == null) throw new Error('cannot get context');
-
+  // Create the shared array buffer, retrieve the pixels and set the pixels in the SAB.
   const sab = new SharedArrayBuffer(canvas.width * canvas.height * 4);
   const arrayOut = new Uint32Array(sab);
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   const arrayIn = new Uint32Array(imageData.data.buffer);
-
+  arrayOut.set(arrayIn); // memcpy
+  // Create the workers and their parameters.
   const queue = ThreadBuilder
     .create((data, start, length) => {
       const R = (data[start] & 0x000000FF) + 1;
@@ -29,6 +27,7 @@ async function main(): Promise<void> {
     })
     .createThreads(navigator.hardwareConcurrency)
     .queue();
+  // The number of tasks is not necessarily the same as the number of workers.
   const nbJobs = navigator.hardwareConcurrency;
   console.log(`using ${nbJobs} jobs`);
   const length = (canvas.width * canvas.height) / nbJobs | 0;
@@ -40,45 +39,35 @@ async function main(): Promise<void> {
 
   const interval = setInterval(() => {
     const nbTimings = timings.length;
-    const sums = timings.reduce((acc, { preparationTime, processingTime, drawTime, totalTime }) => {
-      acc[0] += preparationTime;
-      acc[1] += processingTime;
-      acc[2] += drawTime;
-      acc[3] += totalTime;
+    const sums = timings.reduce((acc, { processingTime, drawTime, totalTime }) => {
+      acc[0] += processingTime;
+      acc[1] += drawTime;
+      acc[2] += totalTime;
       return acc;
-    }, [0, 0, 0, 0]);
-    console.log(`preparationTime: ${sums[0] / nbTimings}, processingTime: ${sums[1] / nbTimings}, drawTime: ${sums[2] / nbTimings}, totalTime: ${sums[3] / nbTimings}`);
+    }, [0, 0, 0]);
+    console.log(`processingTime: ${sums[0] / nbTimings}, drawTime: ${sums[1] / nbTimings}, totalTime: ${sums[2] / nbTimings}`);
   }, 1000);
 
   while (running) {
     const start = Date.now();
-
-    arrayOut.set(arrayIn); // memcpy
-
-    const processing = Date.now();
-    // console.log(`SharedArrayBuffer ready in ${processing - start} ms`);
-    const preparationTime = processing - start;
-
+    // Run the tasks and wait for them to finish.
     const promises = queue.run(params as any);
     await Promise.all(promises);
 
     const putImage = Date.now();
-    // console.log(`Processing in ${putImage - processing} ms`);
-    const processingTime = putImage - processing;
-
-    const imageData32 = new Uint32Array(imageData.data.buffer);
-    imageData32.set(arrayOut);
+    const processingTime = putImage - start;
+    // Set the result into the already retrieved ImageData and put the pixels
+    // in the canvas.
+    arrayIn.set(arrayOut);
     ctx.putImageData(imageData, 0, 0);
 
-    // console.log(`putImageData in ${Date.now() - putImage} ms`);
     const drawTime = Date.now() - putImage;
 
-    // console.log(`done in ${Date.now() - start} ms`);
     const totalTime = Date.now() - start;
     if (timings.length > 1000) {
       timings.shift();
     }
-    timings.push({ preparationTime, processingTime, drawTime, totalTime });
+    timings.push({ processingTime, drawTime, totalTime });
   }
 
   clearInterval(interval);
